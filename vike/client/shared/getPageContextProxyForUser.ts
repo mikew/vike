@@ -1,7 +1,7 @@
 export { getPageContextProxyForUser }
 export { PageContextForPassToClientWarning }
 
-import { assert, assertUsage, getGlobalObject } from '../server-routing-runtime/utils.js'
+import { assert, assertUsage, assertWarning, getGlobalObject } from '../server-routing-runtime/utils.js'
 import { notSerializable } from '../../shared/notSerializable.js'
 const globalObject = getGlobalObject<{ prev?: string }>('getPageContextProxyForUser.ts', {})
 
@@ -63,6 +63,20 @@ function assertIsDefined(pageContext: PageContextForPassToClientWarning, prop: s
     )
   } else {
     // Do nothing, not even a warning, because we don't know whether the user expects that the pageContext value can be undefined. (E.g. a pageContext value that is defined by an optional hook.)
+
+    const isWarning = true
+    const errMsg = [
+      `pageContext[${propName}] isn't defined on the client-side:`,
+      `1. If it's defined on the server-side, add ${propName} to passToClient (https://vike.dev/passToClient), or`,
+      `2. if it's expected that it may not defined, remove this ${isWarning ? 'warning' : 'error'}:`,
+      '   ```js',
+      '   // ❌ Replace this:',
+      `   const val = pageContext[${propName}] ?? someDefaultVal`,
+      '   // ✅ With this:',
+      `   const val = ${propName} in pageContext ? pageContext[${propName}] : someDefaultVal`,
+      '   ```'
+    ].join('\n')
+    assertWarning(false, errMsg, { showStackTrace: true, onlyOnce: false })
   }
 }
 
