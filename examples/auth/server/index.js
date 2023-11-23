@@ -77,6 +77,7 @@ function vike(app) {
       const { statusCode, headers, earlyHints } = httpResponse
       if (res.writeEarlyHints) res.writeEarlyHints({ link: earlyHints.map((e) => e.earlyHintLink) })
       headers.forEach(([name, value]) => res.setHeader(name, value))
+      // LA_TEMP res.setHeader('Cache-Control', 'no-store, max-age=0')
       res.status(statusCode)
       httpResponse.pipe(res)
     }
